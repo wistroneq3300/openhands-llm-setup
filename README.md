@@ -149,6 +149,14 @@ export OLLAMA_MODELS=/mnt/ollama_models
 > `./restore-on-new-machine.sh --all` 即可依序重建（需先能進 GPU 環境）。
 > 也可分步執行：`./restore-on-new-machine.sh 1|2|3|4|5|6`。
 
+> **新機最快路徑**（假設 GPU driver/CUDA 已裝好、只要整套起來）：
+> ```bash
+> git clone https://github.com/wistroneq3300/openhands-llm-setup.git
+> cd openhands-llm-setup
+> ./restore-on-new-machine.sh --all    # 1→2→3→4→5→6 一次跑完
+> # pull 官方模型、部署 systemd、還原 profiles/settings、裝 SDK、起 Agent Canvas
+> ```
+
 1. **裝 GPU driver + CUDA 12.8 + Ollama 0.33.2**（3× B200）。
 2. **還原模型檔** `~/.ollama/models`（或 `/mnt/ollama_models`）：
    - `qwen3-coder` / `frob/deepseek-v4-flash-0731` / `qwen3.8:27b` / `qwen3-vl:32b`
@@ -159,17 +167,16 @@ export OLLAMA_MODELS=/mnt/ollama_models
      ollama pull qwen3-vl:32b
      # frob/deepseek-v4-flash-0731 為客製 fork，需從 `~/.ollama/models/manifests` 搬
      ```
-3. **起 5 個 Ollama 實體**，各自綁 port（例）：
+3. **部署並啟動 5 支 Ollama systemd 服務**（各自綁 11434~11438 port / CUDA_VISIBLE_DEVICES / ctx，
+   見 §6 的 `systemd/`）：
    ```bash
-   # 每個獨立 OLLAMA_HOST=0.0.0.0:PORT + 獨立 OLLAMA_MODELS 目錄
-   OLLAMA_HOST=0.0.0.0:11434 ollama serve &   # deepseek
-   OLLAMA_HOST=0.0.0.0:11435 ollama serve &   # qwen3.8-27b (ctx 65536)
-   OLLAMA_HOST=0.0.0.0:11436 ollama serve &   # qwen3.8-sheng (ctx 131072)
-   OLLAMA_HOST=0.0.0.0:11437 ollama serve &   # qwen3-coder
-   OLLAMA_HOST=0.0.0.0:11438 ollama serve &   # qwen3-vl-32b
+   ./restore-on-new-machine.sh 3        # 一步部署 + 啟動
+   # 或
+   ./start-ollama-5x.sh                 # 選單選 3(部署) → 4(start) → 1(預熱)
    ```
    > 若只想跑單 port，把模型指向同一台、改 base_url 即可。
-4. **裝 OpenHands SDK 1.44.0**（`openhands-agent-server` / `sdk` / `tools` / `workspace`）。
+4. **裝 OpenHands SDK 1.44.0**（`openhands-agent-server` / `sdk` / `tools` / `workspace`，
+   或 `./restore-on-new-machine.sh 5`）。
 5. **起 Agent Canvas**：
    ```bash
    node /usr/bin/agent-canvas --port 3000   # ingress
