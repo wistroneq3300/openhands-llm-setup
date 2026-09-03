@@ -145,6 +145,10 @@ export OLLAMA_MODELS=/mnt/ollama_models
 
 ## 5. 換機還原步驟（摘要）
 
+> **一鍵還原**：本 repo 提供 `restore-on-new-machine.sh`，新機直接跑
+> `./restore-on-new-machine.sh --all` 即可依序重建（需先能進 GPU 環境）。
+> 也可分步執行：`./restore-on-new-machine.sh 1|2|3|4|5|6`。
+
 1. **裝 GPU driver + CUDA 12.8 + Ollama 0.33.2**（3× B200）。
 2. **還原模型檔** `~/.ollama/models`（或 `/mnt/ollama_models`）：
    - `qwen3-coder` / `frob/deepseek-v4-flash-0731` / `qwen3.8:27b` / `qwen3-vl:32b`
@@ -187,12 +191,30 @@ export OLLAMA_MODELS=/mnt/ollama_models
 - `profiles/*.json` — 5 支 LLM profile 的**原始 JSON**（含加密 `api_key`）。
 - `profiles/agent-profile-default.json` — default agent profile（指向 `deepseek-v4-last`）。
 - `settings.json` — 完整 `~/.openhands/settings.json` 快照。
+- `systemd/` — 5 支 Ollama 的 systemd unit + drop-in（`ol-flash` / `ol-qwen27` /
+  `ol-qwen27b` / `ol-coder` / `ol-qwenvl`，各自綁 11434~11438 port 與 CUDA_VISIBLE_DEVICES / ctx）。
 
 > 新機裝好 SDK 後，直接把这些 JSON 放回對應目錄即可：
 > - `profiles/*.json`  → `~/.openhands/profiles/`
 > - `profiles/agent-profile-default.json` → `~/.openhands/agent-profiles/default.json`
 > - `settings.json` → `~/.openhands/settings.json`
+> - `systemd/*` → `/etc/systemd/system/`（`restore-on-new-machine.sh 3` 與 `start-ollama-5x.sh`
+>   的選項 3 會自動做這個）
 > ⚠️ `api_key` 是機器綁定的 Fernet 加密值，換機後建議在 UI 重設。
+
+---
+
+## 6.1 附帶 Scripts
+
+| Script | 用途 |
+|---|---|
+| `start-ollama-5x.sh` | 日常管理 5 支 Ollama：預熱 / 看模型+GPU / 從 repo 重新部署 unit / start / restart。等同舊機 `/root/llm.sh` 的增強版。 |
+| `restore-on-new-machine.sh` | 新機一鍵還原：裝 GPU+CUDA+Ollama → `ollama pull` 模型 → 部署 systemd → 還原 profiles/settings → 裝 SDK → 起 Agent Canvas。 |
+
+- `./restore-on-new-machine.sh --all` 或 `./restore-on-new-machine.sh 3`
+- `./start-ollama-5x.sh` 進去選單後選 3（部署）→ 4（start）→ 1（預熱）
+- 若要只 pull 你要的模型，直接 `ollama pull qwen3-coder qwen3.8:27b qwen3-vl:32b`；
+  `frob/deepseek-v4-flash-0731` 為客製 fork，需連 `~/.ollama/models/manifests` 一起搬。
 
 ---
 
