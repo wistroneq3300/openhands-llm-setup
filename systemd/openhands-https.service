@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenHands Agent Canvas HTTPS front (TLS relay 0.0.0.0:3443 -> 127.0.0.1:3000)
+After=network.target agent-canvas.service
+Wants=agent-canvas.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/openhands-https/https-proxy.js
+Restart=always
+RestartSec=3
+Environment=HOME=/root
+Environment=PROXY_PORT=3443
+Environment=PROXY_HOST=0.0.0.0
+Environment=BACKEND_HOST=127.0.0.1
+Environment=BACKEND_PORT=3000
+
+[Install]
+WantedBy=multi-user.target

@@ -1,8 +1,8 @@
 {
-  "model": "openai/qwen3.8:27b",
-  "api_key": "gAAAAABql6t9mZbBNU5EoZhuW_oVGuNxGMlnkfwntjpTNaEle6a6a6cKCaqqX_o7IOtumdddmy7ifAlObCTnxrcfR5ozHCJuew==",
+  "model": "openai/qwen3.8-27b",
+  "api_key": "gAAAAAB-REPLACE_IN_UI-",
   "auth_type": "api_key",
-  "base_url": "http://127.0.0.1:11435/v1",
+  "base_url": "http://127.0.0.1:8001/v1",
   "openrouter_site_url": "https://docs.all-hands.dev/",
   "openrouter_app_name": "OpenHands",
   "num_retries": 5,
@@ -24,12 +24,17 @@
   "native_tool_calling": true,
   "force_string_serializer": false,
   "inline_image_urls": false,
-  "reasoning_effort": "high",
-  "enable_encrypted_reasoning": true,
+  "reasoning_effort": null,
+  "enable_encrypted_reasoning": false,
   "prompt_cache_retention": "24h",
   "extended_thinking_budget": 200000,
   "usage_id": "default",
-  "litellm_extra_body": {},
+  "litellm_extra_body": {
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
   "is_subscription": false,
-  "schema_version": 1
+  "schema_version": 1,
+  "max_input_tokens": 262144
 }

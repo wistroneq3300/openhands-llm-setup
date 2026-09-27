@@ -1,0 +1,23 @@
+[Unit]
+Description=vLLM DeepSeek-V4-Flash-0731 text-only (TP=4, GPU 0-3, 256K context, deepseek_v4 tool parser)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=CUDA_VISIBLE_DEVICES=0,1,2,3
+Environment=CUDA_HOME=/usr/local/cuda-13.0
+Environment=PATH=/usr/local/cuda-13.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LD_LIBRARY_PATH=/usr/local/cuda-13.0/lib64
+Environment=HF_HOME=/mnt/hf-cache
+Environment=NCCL_SOCKET_IFNAME==lo
+Environment=NCCL_IB_DISABLE=1
+Environment=NCCL_NVLS_ENABLE=0
+Environment=VLLM_ALLREDUCE_USE_SYMM_MEM=0
+ExecStart=/mnt/venv/bin/vllm serve /mnt/hf-cache/deepseek-ai/DeepSeek-V4-Flash-0731 --served-model-name deepseek-v4-flash --host 0.0.0.0 --port 8000 --tensor-parallel-size 4 --max-model-len 262144 --gpu-memory-utilization 0.9 --kv-cache-dtype fp8 --trust-remote-code --enforce-eager --disable-custom-all-reduce --enable-auto-tool-choice --tool-call-parser deepseek_v4 --default-chat-template-kwargs '{"thinking":false}'
+Restart=on-failure
+RestartSec=30
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,29 @@
+[Unit]
+Description=vLLM Qwen3-VL-30B-A3B-Instruct (GPU 6, 64K context)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=CUDA_VISIBLE_DEVICES=6
+Environment=CUDA_HOME=/usr/local/cuda-13.0
+Environment=PATH=/usr/local/cuda-13.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LD_LIBRARY_PATH=/usr/local/cuda-13.0/lib64
+Environment=HF_HOME=/mnt/hf-cache
+Environment=VLLM_ATTENTION_BACKEND=FLASH_ATTN
+ExecStart=/mnt/venv/bin/vllm serve /mnt/hf-cache/Qwen/Qwen3-VL-30B-A3B-Instruct \
+    --served-model-name qwen3-vl \
+    --host 0.0.0.0 \
+    --port 8002 \
+    --tensor-parallel-size 1 \
+    --max-model-len 65536 \
+    --gpu-memory-utilization 0.9 \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --trust-remote-code \
+    --enforce-eager
+Restart=on-failure
+RestartSec=30
+User=root
+
+[Install]
+WantedBy=multi-user.target

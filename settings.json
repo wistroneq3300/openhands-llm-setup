@@ -1,16 +1,16 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "agent_settings": {
-    "schema_version": 5,
+    "schema_version": 6,
     "agent_kind": "openhands",
     "agent": "CodeActAgent",
     "llm": {
-      "model": "openai/frob/deepseek-v4-flash-0731:latest",
-      "api_key": "gAAAAABqmXHOmwWCHugpbXC1cFzjK0FOzzekWBW55bhRR3Pi1oAyx_bq3G31TgDOwRd7bCakwNXo1QZBcMTKJpXmYzFklc3vSA==",
+      "model": "openai/qwen3.8-27b",
+      "api_key": "gAAAAAB-REPLACE_IN_UI-",
       "provider_connection_id": null,
       "auth_type": "api_key",
       "subscription_vendor": null,
-      "base_url": "http://127.0.0.1:11434/v1",
+      "base_url": "http://127.0.0.1:8001/v1",
       "api_version": null,
       "aws_access_key_id": null,
       "aws_secret_access_key": null,
@@ -31,7 +31,7 @@
       "temperature": null,
       "top_p": null,
       "top_k": null,
-      "max_input_tokens": null,
+      "max_input_tokens": 262144,
       "max_output_tokens": null,
       "model_canonical_name": null,
       "api_mode": "auto",
@@ -40,9 +40,8 @@
       "input_cost_per_token": null,
       "output_cost_per_token": null,
       "ollama_base_url": null,
-      "stream": true,
+      "stream": false,
       "drop_params": true,
-      "modify_params": true,
       "disable_vision": false,
       "disable_stop_word": false,
       "caching_prompt": true,
@@ -52,19 +51,27 @@
       "native_tool_calling": true,
       "force_string_serializer": false,
       "inline_image_urls": false,
-      "reasoning_effort": "high",
+      "reasoning_effort": null,
       "reasoning_summary": null,
-      "enable_encrypted_reasoning": true,
+      "enable_encrypted_reasoning": false,
       "prompt_cache_retention": "24h",
-      "extended_thinking_budget": 50000,
+      "extended_thinking_budget": 200000,
       "seed": null,
       "usage_id": "default",
-      "litellm_extra_body": {},
+      "litellm_extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
       "is_subscription": false
     },
     "tools": null,
     "enable_sub_agents": false,
     "enable_switch_llm_tool": true,
+    "enable_classify_and_switch_llm_tool": false,
+    "active_meta_profile": null,
+    "meta_profile": null,
+    "meta_profile_llms": {},
     "tool_concurrency_limit": 1,
     "mcp_config": {},
     "agent_context": {
@@ -76,7 +83,7 @@
       "marketplace_path": "marketplaces/default.json",
       "registered_marketplaces": [],
       "load_project_skills": false,
-      "load_memory": false,
+      "load_memory": true,
       "disabled_skills": [],
       "secrets": null,
       "current_datetime": "2026-08-18T17:26:44.211615+08:00"
@@ -108,8 +115,9 @@
     "confirmation_mode": false,
     "security_analyzer": "llm"
   },
-  "active_profile": "deepseek-v4-last",
+  "active_profile": "qwen3.8-27b",
   "active_agent_profile_id": "41fc4be1-fd05-4ca6-ae2e-8304fa9698a3",
+  "active_meta_profile": null,
   "misc_settings": {
     "app_preferences": {
       "user_consents_to_analytics": true,
@@ -118,6 +126,7 @@
         "agent-canvas-environment",
         "agent-memory",
         "agent-sdk-builder",
+        "canvas-extension-api",
         "code-review",
         "docker",
         "github",
@@ -126,7 +135,12 @@
         "openhands-sdk",
         "skill-creator"
       ],
-      "disabled_skills": []
+      "disabled_skills": [],
+      "language": "zh-TW",
+      "enable_sound_notifications": false,
+      "git_user_name": "openhands",
+      "git_user_email": "openhands@all-hands.dev",
+      "title_llm_profile": "qwen3-vl-32b"
     }
   }
 }

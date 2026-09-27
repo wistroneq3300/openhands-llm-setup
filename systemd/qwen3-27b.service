@@ -1,0 +1,26 @@
+[Unit]
+Description=vLLM Qwen3.8-27B (TP=2, GPU 4,5, 256K context)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=CUDA_VISIBLE_DEVICES=4,5
+Environment=VLLM_ATTENTION_BACKEND=FLASH_ATTN
+ExecStart=/mnt/venv/bin/vllm serve /mnt/hf-cache/Qwen/Qwen3.8-27B \
+    --served-model-name qwen3.8-27b \
+    --host 0.0.0.0 \
+    --port 8001 \
+    --tensor-parallel-size 2 \
+    --max-model-len 262144 \
+    --gpu-memory-utilization 0.9 \
+    --trust-remote-code \
+    --enforce-eager \
+    --enable-auto-tool-choice \
+    --tool-call-parser qwen3_coder
+Restart=on-failure
+RestartSec=30
+User=root
+
+[Install]
+WantedBy=multi-user.target
