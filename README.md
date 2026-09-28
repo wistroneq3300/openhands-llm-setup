@@ -22,7 +22,8 @@
 
 | Port | 服務 | 說明 |
 |---|---|---|
-| **8000** | vLLM #1 → `deepseek-v4-flash` | DeepSeek-V4-Flash-0731（TP=4，GPU 0-3，256K ctx，kv-cache fp8） |
+| **8000** | ~~vLLM #1 → `deepseek-v4-flash`~~ | ~~DeepSeek-V4-Flash-0731~~（已停用，由 V4.1-Flash 取代） |
+| **8011** | vLLM #4 → `deepseek-v41-flash` | DeepSeek-V4.1-Flash（Docker nightly，TP=4，GPU 0-3，256K ctx，kv-cache fp8） |
 | **8001** | vLLM #2 → `qwen3.8-27b` | Qwen3.8-27B（TP=2，GPU 4-5，256K ctx，tool-call） |
 | **8002** | vLLM #3 → `qwen3-vl` | Qwen3-VL-30B-A3B-Instruct（GPU 6，64K ctx，vision） |
 | 18000 | OpenHands Agent Server | `agent-server --host 127.0.0.1 --port 18000` |
@@ -45,7 +46,8 @@
 
 | 模型 | 參數 | 量化/特性 | 上下文 | 能力 |
 |---|---|---|---|---|
-| `DeepSeek-V4-Flash-0731` | 284.3B | kv-cache fp8 | 262144 | completion, tools（deepseek_v4 parser） |
+| `DeepSeek-V4-Flash-0731` | 284.3B | kv-cache fp8 | 262144 | ~~已停用~~（由 V4.1-Flash 取代） |
+| `DeepSeek-V4.1-Flash` | 284.3B | kv-cache fp8 | 262144 | completion, tools（deepseek_v41 parser，Docker nightly） |
 | `Qwen3.8-27B` | 27.3B | — | 262144 | completion, tools（qwen3_coder parser） |
 | `Qwen3-VL-30B-A3B-Instruct` | 30.5B (MoE) | 含視覺 | 65536 | vision, completion |
 
@@ -53,7 +55,8 @@
 
 | Service | 模型路徑 | port | TP | GPU | 特色 flag |
 |---|---|---|---|---|---|
-| `deepseek-v4-0731.service` | `/mnt/hf-cache/deepseek-ai/DeepSeek-V4-Flash-0731` | 8000 | 4 | 0-3 | `--kv-cache-dtype fp8 --tool-call-parser deepseek_v4 --default-chat-template-kwargs {"thinking":false}` |
+| `deepseek-v4-0731.service` | `/mnt/hf-cache/deepseek-ai/DeepSeek-V4-Flash-0731` | ~~8000~~ | ~~4~~ | ~~0-3~~ | **已停用**（由 V4.1-Flash Docker 取代） |
+| `deepseek-v41-docker.service` | `/mnt/hf-cache/deepseek-ai/DeepSeek-V4.1-Flash` | 8011 | 4 | 0-3 | Docker `vllm/vllm-openai:cu134-nightly`，`--ipc=host --kv-cache-dtype fp8 --tool-call-parser deepseek_v41 --enforce-eager --default-chat-template-kwargs {"thinking":false}` |
 | `qwen3-27b.service` | `/mnt/hf-cache/Qwen/Qwen3.8-27B` | 8001 | 2 | 4,5 | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
 | `qwen3-vl.service` | `/mnt/hf-cache/Qwen/Qwen3-VL-30B-A3B-Instruct` | 8002 | 1 | 6 | `--limit-mm-per-prompt {"image":1}`，`VLLM_ATTENTION_BACKEND=FLASH_ATTN` |
 
@@ -69,7 +72,8 @@
 
 | Profile 名稱 | model (litellm) | base_url | 對應 vLLM port | 特色設定 |
 |---|---|---|---|---|
-| `deepseek-v4-flash` | `openai/deepseek-v4-flash` | `http://127.0.0.1:8000/v1` | 8000 | `disable_vision=true`，`litellm_extra_body.chat_template_kwargs.thinking=false` |
+| `deepseek-v4-flash` | `openai/deepseek-v4-flash` | ~~`http://127.0.0.1:8000/v1`~~ | ~~8000~~ | **已停用** |
+| `deepseek-v41-flash` | `openai/deepseek-v41-flash` | `http://127.0.0.1:8011/v1` | 8011 | `disable_vision=true`，`litellm_extra_body.chat_template_kwargs.thinking=false`，`extended_thinking_budget=200000` |
 | `qwen3.8-27b` | `openai/qwen3.8-27b` | `http://127.0.0.1:8001/v1` | 8001 | `max_input_tokens=262144`，`enable_thinking=false` |
 | `qwen3-vl-32b` | `openai/qwen3-vl` | `http://127.0.0.1:8002/v1` | 8002 | `capability_overrides.supports_vision=true` |
 
@@ -210,8 +214,9 @@ export NCCL_NVLS_ENABLE=0
 
 ## 9. 注意事項
 
-- `DeepSeek-V4-Flash-0731` 為客製 fork（`frob/deepseek-v4-flash-0731`），官方 registry 可能沒有，
-  務必隨 `/mnt/hf-cache` 一起搬。
+- `DeepSeek-V4-Flash-0731` 為客製 fork（`frob/deepseek-v4-flash-0731`），**已停用**（2026-09-28），由 `DeepSeek-V4.1-Flash`（Docker nightly）取代。
+- `DeepSeek-V4.1-Flash` 用 Docker（`vllm/vllm-openai:cu134-nightly`）啟動，systemd unit 為 `deepseek-v41-docker.service`（Type=oneshot + RemainAfterExit=yes + `--restart unless-stopped`）。**必須加 `--ipc=host`**（/dev/shm 預設 64MB 不夠 vLLM 用）。
+- V4.1-Flash 的 weights 必須用官方 revision `dba1be0a` 下載；2026-09-28 發現 43/48 shards SHA256 不一致（內容損壞）→ 全部 inference NaN。修法：移除壞 shards → 重下 → `hf cache verify` 確認 48/48 通過。
 - 每支 vLLM 的參數（TP/ctx/kv-cache/mmproj）依模型而異，搬模型時連 unit 一起記（見上表）。
 - `api_key` 為機器綁定的加密值，換機後在 UI 重設即可，**不要把明文 key 放到 git**。
 - HTTPS relay 一定要注入 `X-Forwarded-Proto: https` + 避免雙寫（會壞 WebSocket），
