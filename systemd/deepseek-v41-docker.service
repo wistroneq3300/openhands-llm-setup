@@ -10,7 +10,9 @@ ExecStart=/usr/bin/docker run -d \
     --name deepseek-v41-nightly-test \
     --restart unless-stopped \
     --gpus '"device=0,1,2,3"' \
-    --ipc=host \
+    --shm-size=32g \
+    -e NCCL_NVLS_ENABLE=0 \
+    -e VLLM_ATTENTION_BACKEND=FLASH_ATTN \
     -p 8011:8000 \
     -v /mnt/hf-cache/deepseek-ai/DeepSeek-V4.1-Flash:/models/deepseek-v41-flash:ro \
     -v /var/log/vllm-nightly:/logs \
