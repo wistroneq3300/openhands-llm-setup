@@ -1,0 +1,11 @@
+[deepseek-v4-flash] P1-数论(短) run1: 5.6s out=795 tok/s=140.8 in=79 cached=0
+[deepseek-v4-flash] P1-数论(短) run2: 5.6s out=795 tok/s=141.1 in=79 cached=0
+[deepseek-v4-flash] P2-算法(短) run1: 10.3s out=1456 tok/s=141.1 in=88 cached=0
+[deepseek-v4-flash] P2-算法(短) run2: 10.3s out=1456 tok/s=141.0 in=88 cached=0
+[deepseek-v4-flash] P3-动态规划(短) run1: 12.6s out=1770 tok/s=141.0 in=118 cached=0
+[deepseek-v4-flash] P3-动态规划(短) run2: 12.6s out=1770 tok/s=141.0 in=118 cached=0
+[deepseek-v4-flash] P4-系统设计(短) run1: 14.4s out=2036 tok/s=140.9 in=93 cached=0
+[deepseek-v4-flash] P4-系统设计(短) run2: 14.4s out=2036 tok/s=141.0 in=93 cached=0
+[deepseek-v4-flash] L1-长context run1: 14.6s out=2048 tok/s=140.1 in=816 cached=0
+[deepseek-v4-flash] L1-长context run2: 14.6s out=2048 tok/s=140.3 in=816 cached=0
+DONE

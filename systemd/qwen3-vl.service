@@ -20,7 +20,7 @@ ExecStart=/mnt/venv/bin/vllm serve /mnt/hf-cache/Qwen/Qwen3-VL-30B-A3B-Instruct 
     --gpu-memory-utilization 0.9 \
     --limit-mm-per-prompt '{"image": 1}' \
     --trust-remote-code \
-    --enforce-eager
+
 Restart=on-failure
 RestartSec=30
 User=root
