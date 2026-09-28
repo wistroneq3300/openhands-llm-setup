@@ -1,6 +1,6 @@
 {
   "model": "openai/deepseek-v41-flash",
-  "api_key": "gAAAAABquP706tgrFo7SR_D3tzvFpfZE-9cKDJ92y843UmgQFS-N3WQNJ2MmvHkv7fvihb0L9seylyObV8mMyhreEongg8uOBA==",
+  "api_key": "gAAAAAB-REPLACE_IN_UI-",
   "auth_type": "api_key",
   "base_url": "http://127.0.0.1:8011/v1",
   "openrouter_site_url": "https://docs.all-hands.dev/",
