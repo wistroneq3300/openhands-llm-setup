@@ -57,6 +57,22 @@
 | `qwen3-27b.service` | `/mnt/hf-cache/Qwen/Qwen3.8-27B` | 8001 | 2 | 4,5 | `--enable-auto-tool-choice --tool-call-parser qwen3_coder`，⚠️ 需 `NCCL_NVLS_ENABLE=0` + `VLLM_ALLREDUCE_USE_SYMM_MEM=0` + `--disable-custom-all-reduce`（見 §9） |
 | `qwen3-vl.service` | `/mnt/hf-cache/Qwen/Qwen3-VL-30B-A3B-Instruct` | 8002 | 1 | 6 | `--limit-mm-per-prompt {"image":1}`，`VLLM_ATTENTION_BACKEND=FLASH_ATTN` |
 
+### 效能優化（2026-09-28）— 三支全改 `--enforce-eager` 移除
+
+> 重點：`--enforce-eager` 會強制 vLLM 關閉 **CUDA graph / torch.compile**，
+> 在 B200 上對 decode 傷害極大。三支 service 都移除該 flag 後獲得大幅加速，
+> **context 完全不動**（deepseek/qwen 維持 262144、qwen3-vl 維持 65536）。
+
+| Service | 移除前 tok/s | 移除後 tok/s | 加速 | 2048-token 生成時間 |
+|---|---|---|---|---|
+| `deepseek-v4-0731`（TP4） | 16 | **141** | **~8.5x** | 117s → 6~15s |
+| `qwen3-27b`（TP2） | 35 | **116** | **3.3x** | 58s → 17.6s |
+| `qwen3-vl`（TP1 / MoE A3B） | ~35 | **294** | **~8.4x** | ~58s → 7s |
+
+- 完整 A/B 測試數據見 [`bench/REPORT.md`](bench/REPORT.md)（同套題 5 題 ×2 runs，GPU 空閒）。
+- 三支 service 的現行內容都已更新（`systemd/*.service`），換機還原直接使用即可。
+- 備份：改動前的 service 檔保留為 `*.bak-preBC-*` / `*.bak-preD1-*` / `*.bak-preB-*`（未進 repo）。
+
 ---
 
 ## 3. OpenHands LLM Profiles

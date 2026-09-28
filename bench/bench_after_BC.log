@@ -1,0 +1,11 @@
+[qwen3.8-27b] P1-数论(短) run1: 17.6s out=2048 tok/s=116.2 in=132 cached=0
+[qwen3.8-27b] P1-数论(短) run2: 17.6s out=2048 tok/s=116.4 in=132 cached=0
+[qwen3.8-27b] P2-算法(短) run1: 17.6s out=2048 tok/s=116.4 in=138 cached=0
+[qwen3.8-27b] P2-算法(短) run2: 17.6s out=2048 tok/s=116.5 in=138 cached=0
+[qwen3.8-27b] P3-动态规划(短) run1: 17.6s out=2048 tok/s=116.4 in=171 cached=0
+[qwen3.8-27b] P3-动态规划(短) run2: 17.6s out=2048 tok/s=116.5 in=171 cached=0
+[qwen3.8-27b] P4-系统设计(短) run1: 17.6s out=2048 tok/s=116.5 in=141 cached=0
+[qwen3.8-27b] P4-系统设计(短) run2: 17.6s out=2048 tok/s=116.5 in=141 cached=0
+[qwen3.8-27b] L1-长context run1: 17.6s out=2048 tok/s=116.2 in=875 cached=0
+[qwen3.8-27b] L1-长context run2: 17.6s out=2048 tok/s=116.4 in=875 cached=0
+DONE

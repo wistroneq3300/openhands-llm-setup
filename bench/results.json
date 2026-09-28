@@ -1,0 +1,112 @@
+[
+  {
+    "prompt_tokens": 90,
+    "completion_tokens": 2017,
+    "wall_s": 6.861480699997628,
+    "content_len": 2976,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P1-数论(短)",
+    "run": 1,
+    "tok_per_s": 294.0
+  },
+  {
+    "prompt_tokens": 90,
+    "completion_tokens": 2048,
+    "wall_s": 6.957476288996986,
+    "content_len": 3153,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P1-数论(短)",
+    "run": 2,
+    "tok_per_s": 294.4
+  },
+  {
+    "prompt_tokens": 101,
+    "completion_tokens": 2048,
+    "wall_s": 6.961236624003504,
+    "content_len": 3677,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P2-算法(短)",
+    "run": 1,
+    "tok_per_s": 294.2
+  },
+  {
+    "prompt_tokens": 101,
+    "completion_tokens": 1952,
+    "wall_s": 6.633645920999697,
+    "content_len": 3598,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P2-算法(短)",
+    "run": 2,
+    "tok_per_s": 294.3
+  },
+  {
+    "prompt_tokens": 134,
+    "completion_tokens": 2048,
+    "wall_s": 6.964519734989153,
+    "content_len": 3356,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P3-动态规划(短)",
+    "run": 1,
+    "tok_per_s": 294.1
+  },
+  {
+    "prompt_tokens": 134,
+    "completion_tokens": 2048,
+    "wall_s": 6.966585796995787,
+    "content_len": 3356,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P3-动态规划(短)",
+    "run": 2,
+    "tok_per_s": 294.0
+  },
+  {
+    "prompt_tokens": 110,
+    "completion_tokens": 2048,
+    "wall_s": 6.9618731969967484,
+    "content_len": 4187,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P4-系统设计(短)",
+    "run": 1,
+    "tok_per_s": 294.2
+  },
+  {
+    "prompt_tokens": 110,
+    "completion_tokens": 2048,
+    "wall_s": 6.95868614500796,
+    "content_len": 4929,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "P4-系统设计(短)",
+    "run": 2,
+    "tok_per_s": 294.3
+  },
+  {
+    "prompt_tokens": 817,
+    "completion_tokens": 2048,
+    "wall_s": 7.010308286000509,
+    "content_len": 7528,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "L1-长context",
+    "run": 1,
+    "tok_per_s": 292.1
+  },
+  {
+    "prompt_tokens": 817,
+    "completion_tokens": 2048,
+    "wall_s": 6.997818144998746,
+    "content_len": 7477,
+    "cached": 0,
+    "model": "qwen3-vl",
+    "problem": "L1-长context",
+    "run": 2,
+    "tok_per_s": 292.7
+  }
+]
