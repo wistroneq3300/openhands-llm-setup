@@ -54,7 +54,7 @@
 | Service | 模型路徑 | port | TP | GPU | 特色 flag |
 |---|---|---|---|---|---|
 | `deepseek-v4-0731.service` | `/mnt/hf-cache/deepseek-ai/DeepSeek-V4-Flash-0731` | 8000 | 4 | 0-3 | `--kv-cache-dtype fp8 --tool-call-parser deepseek_v4 --default-chat-template-kwargs {"thinking":false}` |
-| `qwen3-27b.service` | `/mnt/hf-cache/Qwen/Qwen3.8-27B` | 8001 | 2 | 4,5 | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
+| `qwen3-27b.service` | `/mnt/hf-cache/Qwen/Qwen3.8-27B` | 8001 | 2 | 4,5 | `--enable-auto-tool-choice --tool-call-parser qwen3_coder`，⚠️ 需 `NCCL_NVLS_ENABLE=0` + `VLLM_ALLREDUCE_USE_SYMM_MEM=0` + `--disable-custom-all-reduce`（見 §9） |
 | `qwen3-vl.service` | `/mnt/hf-cache/Qwen/Qwen3-VL-30B-A3B-Instruct` | 8002 | 1 | 6 | `--limit-mm-per-prompt {"image":1}`，`VLLM_ATTENTION_BACKEND=FLASH_ATTN` |
 
 ---
@@ -217,3 +217,4 @@ export NCCL_NVLS_ENABLE=0
 - HTTPS relay 一定要注入 `X-Forwarded-Proto: https` + 避免雙寫（會壞 WebSocket），
   見本文 §4（2026-09-28 實戰踩雷紀錄）。
 - 本機 nginx 80/443 被 BMC proxy 佔用（`/etc/nginx/conf.d/bmc_proxy.conf`），HTTPS 走 3443 的 node relay，勿動 nginx。
+- ⚠️ **NVLink SHARP (NVLS) fabric 踩雷（2026-09-28）**：有人在有 LLM 服務運行時 `systemctl restart nvidia-fabricmanager`，它會連帶重啟 NVLink Subnet Manager(OpenSM)、把 NVLink SHARP 多播 fabric 拆掉重建；若同時有 vLLM 正要 join NVLS 群組，driver 快取狀態會卡在 `NV_ERR_FABRIC_STATE_OUT_OF_SYNC`，之後該服務每次啟動都報 `NCCL error: unhandled cuda error` 無限重啟，直到 reboot。**因此 `qwen3-27b.service` 用 `NCCL_NVLS_ENABLE=0` + `VLLM_ALLREDUCE_USE_SYMM_MEM=0` + `--disable-custom-all-reduce` 繞過 NVLS**（跟 deepseek 一樣走純 NCCL P2P）。**不要隨便移除這三個參數**；只有 reboot 讓 fabric 重新初始化後才能還原。避免在有服務運行時動 `nvidia-fabricmanager`（要動就先停 vLLM 或直接 reboot）。

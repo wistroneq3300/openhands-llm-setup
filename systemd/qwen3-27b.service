@@ -7,6 +7,13 @@ Wants=network-online.target
 Type=simple
 Environment=CUDA_VISIBLE_DEVICES=4,5
 Environment=VLLM_ATTENTION_BACKEND=FLASH_ATTN
+# 2026-09-28: DO NOT REMOVE. Workaround for NVLink SHARP (NVLS) fabric out-of-sync
+# on driver 580 (NV_ERR_FABRIC_STATE_OUT_OF_SYNC) after a nvidia-fabricmanager restart:
+# vLLM custom-all-reduce / symm_mem fails with "NCCL error: unhandled cuda error".
+# Disabling NVLS makes vLLM fall back to plain NCCL (PYNCCL) over healthy NVLink P2P.
+# Can only be reverted after a full reboot re-initializes the fabric.
+Environment=NCCL_NVLS_ENABLE=0
+Environment=VLLM_ALLREDUCE_USE_SYMM_MEM=0
 ExecStart=/mnt/venv/bin/vllm serve /mnt/hf-cache/Qwen/Qwen3.8-27B \
     --served-model-name qwen3.8-27b \
     --host 0.0.0.0 \
@@ -16,6 +23,7 @@ ExecStart=/mnt/venv/bin/vllm serve /mnt/hf-cache/Qwen/Qwen3.8-27B \
     --gpu-memory-utilization 0.9 \
     --trust-remote-code \
     --enforce-eager \
+    --disable-custom-all-reduce \
     --enable-auto-tool-choice \
     --tool-call-parser qwen3_coder
 Restart=on-failure
