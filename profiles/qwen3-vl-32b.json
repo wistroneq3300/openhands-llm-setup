@@ -26,7 +26,7 @@
   "native_tool_calling": true,
   "force_string_serializer": false,
   "inline_image_urls": false,
-  "reasoning_effort": null,
+  "reasoning_effort": "none",
   "enable_encrypted_reasoning": false,
   "prompt_cache_retention": "24h",
   "extended_thinking_budget": 200000,

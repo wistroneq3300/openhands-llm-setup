@@ -73,9 +73,11 @@
 | Profile 名稱 | model (litellm) | base_url | 對應 vLLM port | 特色設定 |
 |---|---|---|---|---|
 | `deepseek-v4-flash` | `openai/deepseek-v4-flash` | ~~`http://127.0.0.1:8000/v1`~~ | ~~8000~~ | **已停用** |
-| `deepseek-v41-flash` | `openai/deepseek-v41-flash` | `http://127.0.0.1:8011/v1` | 8011 | `disable_vision=true`，`litellm_extra_body.chat_template_kwargs.thinking=false`，`extended_thinking_budget=200000` |
-| `qwen3.8-27b` | `openai/qwen3.8-27b` | `http://127.0.0.1:8001/v1` | 8001 | `max_input_tokens=262144`，`enable_thinking=false` |
-| `qwen3-vl-32b` | `openai/qwen3-vl` | `http://127.0.0.1:8002/v1` | 8002 | `capability_overrides.supports_vision=true` |
+| `deepseek-v41-flash` | `openai/deepseek-v41-flash` | `http://127.0.0.1:8011/v1` | 8011 | `disable_vision=true`，`reasoning_effort=none`，`litellm_extra_body.chat_template_kwargs.thinking=false`，`extended_thinking_budget=200000` |
+| `qwen3.8-27b` | `openai/qwen3.8-27b` | `http://127.0.0.1:8001/v1` | 8001 | `max_input_tokens=262144`，`reasoning_effort=none`，`enable_thinking=false` |
+| `qwen3-vl-32b` | `openai/qwen3-vl` | `http://127.0.0.1:8002/v1` | 8002 | `capability_overrides.supports_vision=true`，`reasoning_effort=none` |
+
+> ⚠️ **每個 profile 都必須設 `"reasoning_effort": "none"`**，見 §10。這是 2026-09-29 才發現的關鍵設定。
 
 ### 現行設定（`~/.openhands/settings.json`）
 - `active_profile`: **`qwen3.8-27b`**
@@ -204,11 +206,15 @@ export NCCL_NVLS_ENABLE=0
 | `restore-on-new-machine.sh` | 新機一鍵還原:抓模型 → 部署 3× vLLM systemd → HTTPS relay → 還原 profiles/settings → 裝 SDK → 起 Agent Canvas。 |
 | `https/gen-cert.sh` | 產生自簽 TLS 憑證（把 LAN IP 寫進 SAN）。 |
 | `https/deploy-https.sh` | 部署 HTTPS relay（proxy + certs + systemd）。 |
+| `diagnostics/check-reasoning-effort.py` | 檢查 `settings.json` 與每個 profile 的 `reasoning_effort` 是否為 `none`（見 §10）。 |
+| `diagnostics/fix-existing-conversations.py` | 用 `switch_llm` 把**既有對話**的 `reasoning_effort` 改成 `none`（見 §10）。 |
 
 - `./restore-on-new-machine.sh --all --ips <LAN-IP>`
 - `./restore-on-new-machine.sh 3`
 - `./https/gen-cert.sh <LAN-IP>`
 - `./https/deploy-https.sh <LAN-IP>`
+- `python3 diagnostics/check-reasoning-effort.py`
+- `python3 diagnostics/fix-existing-conversations.py --all --dry-run`
 
 ---
 
@@ -222,3 +228,66 @@ export NCCL_NVLS_ENABLE=0
 - HTTPS relay 一定要注入 `X-Forwarded-Proto: https` + 避免雙寫（會壞 WebSocket），
   見本文 §4（2026-09-28 實戰踩雷紀錄）。
 - 本機 nginx 80/443 被 BMC proxy 佔用（`/etc/nginx/conf.d/bmc_proxy.conf`），HTTPS 走 3443 的 node relay，勿動 nginx。
+
+---
+
+## 10. ★ 推理洩漏（UI 出現一堆自言自語）的真正原因 — 2026-09-29
+
+### 症狀
+用 `deepseek-v41-flash` 對話時，模型整段**英文推理**會變成正式訊息顯示（不是可收合的 Thinking 區塊）。
+把它當成「thinking 沒關掉」去改 `chat_template_kwargs.thinking=false` 是**沒用的**。
+
+### 根因鏈（三層，缺一不可）
+1. **OpenHands SDK 的 `LLM.reasoning_effort` 預設值是 `"high"`**
+   `openhands/sdk/llm/llm.py` → `reasoning_effort: (...) = Field(default="high", ...)`
+   profile 若**沒有這個 key**，就會 fallback 成 `"high"`；
+   `openhands/sdk/llm/options/chat_options.py` 會把非 None 的值塞進請求 → **每次請求都送 `reasoning_effort="high"`**。
+
+2. **vLLM 的 DeepSeek-V4 chat template 用 `reasoning_effort` 決定要不要開思考，會蓋掉 `thinking:false`。**
+   實測（port 8011，真實 31K system prompt）：
+
+   | `chat_template_kwargs` | `reasoning_effort` | 結果 |
+   |---|---|---|
+   | `{"thinking":false}` | （未送） | ✅ 乾淨 |
+   | `{"thinking":false}` | `high` | ❌ **漏** |
+   | `{"thinking":false}` | `low` | ❌ **漏** |
+   | `{"thinking":false}` | `none` | ✅ 乾淨 |
+
+3. **為什麼 UI 拆不掉**：開思考後，開頭的 ` thinking` 已被模板 prefill 吃掉，`content` 只剩
+   `推理…</think>答案`。OpenHands 前端 `event-thought-helpers.js` 的 `splitInlineThink`
+   **只認「content 以開頭標籤開頭」才會拆** → 拆不掉 → 整段推理當**正式訊息**顯示。
+
+### 修法（vLLM 完全不用動、不用重啟）
+`settings.json` 的 `agent_settings.llm.reasoning_effort`，以及**每個** `profiles/*.json`，都設：
+
+```json
+"reasoning_effort": "none"
+```
+
+> ⚠️ **必須是 `"none"`，不能是 `null`**。`null` 會被 SDK 的 default `"high"` 取代（實測驗證過）。
+> ⚠️ `qwen3.8-27b` 對此**免疫**（它用 `enable_thinking`，SDK 只對支援 reasoning_effort 的模型塞該參數），
+>    但為了統一還是全部設 `none`。
+
+### 既有對話不會自動生效（設定在建立對話時就凍結）
+- `PATCH /api/conversations/{id}` **只能改 title/tags**，改不了 LLM。
+- 要用 `POST /api/conversations/{id}/switch_llm`，body 傳**完整 LLM 物件**：
+  ```python
+  prof = json.load(open('~/.openhands/profiles/deepseek-v41-flash.json'))
+  LLM  = {k: v for k, v in prof.items()
+          if k not in ('id', 'name', 'schema_version', 'display_name', 'description')}
+  LLM['reasoning_effort'] = 'none'
+  POST /api/conversations/{cid}/switch_llm   {"llm": LLM}
+  ```
+  header 用 `X-Session-API-Key`（key 在 `~/.openhands/agent-canvas/api-key.txt`）。
+- 正在跑（running）的對話可以改成功；**已結束（finished）的對話改了不會生效** → 開新對話最快。
+
+### 驗證方式
+```bash
+python3 diagnostics/check-reasoning-effort.py
+```
+
+### 走過的死路（別重犯）
+- ❌ 以為是 `think` tool → 改 `node_modules/.../prompts/system-prompt.js` 的 think 說明，**無效**（已還原）。
+- ❌ 以為是 profile 的 `thinking:false` 壞了 → 其實它好的，是被 `reasoning_effort` 蓋掉。
+- ❌ 設 `reasoning_effort = null` → **無效**（會被 default `high` 取代）。
+

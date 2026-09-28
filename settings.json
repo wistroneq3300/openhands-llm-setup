@@ -51,7 +51,7 @@
       "native_tool_calling": true,
       "force_string_serializer": false,
       "inline_image_urls": false,
-      "reasoning_effort": null,
+      "reasoning_effort": "none",
       "reasoning_summary": null,
       "enable_encrypted_reasoning": false,
       "prompt_cache_retention": "24h",

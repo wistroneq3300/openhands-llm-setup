@@ -28,6 +28,7 @@
   "enable_encrypted_reasoning": false,
   "prompt_cache_retention": "24h",
   "extended_thinking_budget": 200000,
+  "reasoning_effort": "none",
   "usage_id": "default",
   "litellm_extra_body": {
     "chat_template_kwargs": {
