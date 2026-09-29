@@ -22,7 +22,7 @@ ExecStart=/usr/bin/docker run -d \
     -v /var/log/vllm-nightly:/logs \
     -v /opt/v41-patch/apply_patch.sh:/opt/apply_patch.sh \
     --entrypoint /bin/bash \
-    vllm/vllm-openai:cu134-nightly \
+    vllm/vllm-openai@sha256:cb89f35c700821851e401d0f490470794f3cc40c4fc4ba6316920ae508360fef \
     /opt/apply_patch.sh \
     vllm serve /models/deepseek-v41-flash \
         --served-model-name deepseek-v41-flash \
