@@ -6,6 +6,10 @@ Requires=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+# 每次啟動前先清掉同名舊容器，避免重開機時 docker 自啟的舊容器
+# 與 systemd 的 `docker run --name` 撞名（exit 125）。rm -f 對不存在的
+# 容器回 0，安全可重跑。
+ExecStartPre=-/usr/bin/docker rm -f deepseek-v41-nightly-test
 ExecStart=/usr/bin/docker run -d \
     --name deepseek-v41-nightly-test \
     --restart unless-stopped \
